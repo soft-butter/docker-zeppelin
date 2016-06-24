@@ -1,4 +1,4 @@
-FROM phusion/baseimage:0.9.17
+FROM phusion/baseimage:0.9.18
 
 MAINTAINER Joseph Cheng <indiejoseph@gmail.com>
 
@@ -23,15 +23,12 @@ ENV PATH $ZEPPELIN_HOME/bin:$PATH
 
 # Build and Install Zeppelin (this is only one fat command to reduce container size)
 RUN wget http://mirror.netcologne.de/apache.org/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz -O /tmp/apache-maven-3.3.9-bin.tar.gz && \
-    tar -xzf /tmp/apache-maven-3.3.9-bin.tar.gz -C /tmp && \
-    git clone https://github.com/apache/incubator-zeppelin /tmp/apache-zeppelin && \
-    cd /tmp/apache-zeppelin && \
-    git checkout tags/v0.5.6 && \
-    /tmp/apache-maven-3.3.9/bin/mvn clean package -Pspark-1.6 -Dspark.version=1.6.1 -Ppyspark -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests -Pyarn && \
-    ls /tmp/apache-zeppelin/zeppelin-distribution/target && \
-    mv /tmp/apache-zeppelin/zeppelin-distribution/target/zeppelin-0.6.0-incubating-SNAPSHOT/zeppelin-0.6.0-incubating-SNAPSHOT /opt && \
-    ln -s /opt/zeppelin-0.6.0-incubating-SNAPSHOT $ZEPPELIN_HOME && \
-    rm -fr /tmp/apache* ~/.m2 ~/.node-gyp ~/.npm
+    tar -xzf /tmp/apache-maven-3.3.9-bin.tar.gz -C /tmp
+RUN git clone https://github.com/apache/incubator-zeppelin $ZEPPELIN_HOME && cd $ZEPPELIN_HOME
+WORKDIR $ZEPPELIN_HOME
+RUN git checkout tags/v0.5.6
+RUN /tmp/apache-maven-3.3.9/bin/mvn clean package -Pspark-1.6 -Dspark.version=1.6.1 -Ppyspark -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests -Pyarn
+RUN rm -fr /tmp/apache* ~/.m2 ~/.node-gyp ~/.npm
 
 # Ports for Zeppelin UI and websocket connection
 EXPOSE 8888 8889 4040
